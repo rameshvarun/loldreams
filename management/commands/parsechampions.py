@@ -7,8 +7,6 @@ import json
 
 API_BASE_URL = 'https://prod.api.pvp.net/api/lol'
 
-
-
 class Command(BaseCommand):
 	help = 'Get new list of champoins.'
 	
