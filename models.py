@@ -3,6 +3,7 @@ from django.db import models
 # Champion model
 class Champion(models.Model):
 	name = models.CharField(max_length=200)
+	riotid = models.IntegerField() #Id assigned by Riot in the API
 	
 	def __unicode__(self):
 		return self.name
