@@ -1,5 +1,7 @@
 from django.db import models
 
+import datetime
+
 # Champion model
 class Champion(models.Model):
 	name = models.CharField(max_length=200)
@@ -20,6 +22,8 @@ class Game(models.Model):
 	team2 = models.ManyToManyField(Champion, related_name='team2', blank=True)
 	
 	result = models.BooleanField() #True if team 1 won, false if team 2 won
+	
+	date = models.DateTimeField('Date played') #The date the game was played
 	
 CHALLENGER = 0
 DIAMOND = 1
