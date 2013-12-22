@@ -4,8 +4,12 @@ from django.http import HttpResponse
 from loldreams.models import *
 
 import json
+import time
 
 def win_rate(request):
+	#Benchmarking
+	start = time.clock()
+	
 	#Need to have two queries, as the specific champion combination might match either team1 or team2
 	team1_games = Game.objects.all()
 	team2_games = Game.objects.all()
@@ -34,7 +38,8 @@ def win_rate(request):
 	response = {
 		'sample_size' : sample_size,
 		'wins' : wins,
-		'losses' : losses
+		'losses' : losses,
+		'time' : time.clock() - start
 		}
 	
 	#If we can, calculate a win rate

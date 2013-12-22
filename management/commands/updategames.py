@@ -37,7 +37,8 @@ class Command(BaseCommand):
 				if game['subType'] == 'RANKED_SOLO_5x5' and len( Game.objects.filter(riotid=game['gameId']) ) == 0:
 					gameObj = Game( riotid=game['gameId'],
 									tier=CHALLENGER,
-									date=datetime.datetime.fromtimestamp(game['createDate']/1000.0)
+									date=datetime.datetime.fromtimestamp(game['createDate']/1000.0),
+									region='na'
 									)
 					
 					#Find out if player's team won
@@ -65,3 +66,5 @@ class Command(BaseCommand):
 					
 					#Persist to database
 					gameObj.save()
+					
+		self.stdout.write( str(len(Game.objects.all())) + " game entries stored in the database." )

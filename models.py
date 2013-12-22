@@ -7,6 +7,10 @@ class Champion(models.Model):
 	name = models.CharField(max_length=200)
 	riotid = models.IntegerField() #Id assigned by Riot in the API
 	
+	#Comma separated, lowercase list of the roles that the champion can play
+	#First role in list should be the primary role
+	roles = models.CharField(max_length=200, blank=True)
+	
 	def __unicode__(self):
 		return self.name
 
@@ -25,5 +29,15 @@ class Game(models.Model):
 	
 	date = models.DateTimeField('Date played') #The date the game was played
 	
+	region = models.CharField(max_length=5, blank=True, choices=REGION_CHOICES) #The region in which the game was played
+	
 CHALLENGER = 0
 DIAMOND = 1
+
+#Region choices
+REGION_CHOICES = (
+    ('na', 'North America'),
+    ('euw', 'Europe West'),
+    ('eune', 'Europe Nordic & East'),
+	('br', 'Brazil')
+)
