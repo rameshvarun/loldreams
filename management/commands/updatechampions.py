@@ -7,6 +7,7 @@ import json
 
 API_BASE_URL = 'https://prod.api.pvp.net/api/lol'
 
+#Gets a list of all champions, puts them into the database
 class Command(BaseCommand):
 	help = 'Get new list of champoins.'
 	

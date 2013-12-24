@@ -3,10 +3,10 @@ from loldreams.models import *
 
 from datetime import *
 
-DAYS = 30
+DAYS = 28
 
 class Command(BaseCommand):
-	help = 'Populate the database with parsed games from the API'
+	help = 'Deletes games older than a certain amount of days.'
 	
 	def handle(self, *args, **options):
 		date_limit = datetime.now() - timedelta(days=DAYS)

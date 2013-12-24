@@ -13,6 +13,7 @@ import json
 
 API_BASE_URL = 'https://prod.api.pvp.net/api/lol'
 
+#Parsing class for parsing lolsummoner.com
 class LadderParser(HTMLParser):
 	def __init__(self, out):
 		self.out = out
@@ -42,6 +43,7 @@ class LadderParser(HTMLParser):
 		if data.strip():
 			self.currentSummoner.append(data.strip())
 			
+#Given a region and a tier, returns all summoners in the tier
 def GetSummonersInTier(out, region, tier):
 	summoners = []
 	out.write('Getting a list of all summoner names in tier ' + tier + ' and region ' + region)
@@ -80,7 +82,7 @@ class Command(BaseCommand):
 		#Store the ladder data in a python 'shelf'
 		shelf = shelve.open("ladder.cache")
 		
-		for region_code, region_name in REGION_CHOICES:
+		for region_code, region_name in REGION_CHOICES: #For each region specified in the models file
 			shelf[ region_code + '_challenger_names'] = GetSummonersInTier(self.stdout, region_code, "Challenger")
 			shelf.sync()
 			
