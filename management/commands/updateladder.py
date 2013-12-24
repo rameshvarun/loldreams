@@ -5,7 +5,6 @@ from loldreams.models import *
 
 from HTMLParser import HTMLParser
 
-
 import urllib2
 import urllib
 import time
@@ -81,9 +80,11 @@ class Command(BaseCommand):
 		#Store the ladder data in a python 'shelf'
 		shelf = shelve.open("ladder.cache")
 		
-		shelf['na_challenger_names'] = GetSummonersInTier(self.stdout, "na", "Challenger")
-		shelf.sync()
-		shelf['na_challenger_ids'] = [ GetSummonerProfileByName(name, 'na')['id'] for name in shelf['na_challenger_names']]
-		shelf.sync()
+		for region_code, region_name in REGION_CHOICES:
+			shelf[ region_code + '_challenger_names'] = GetSummonersInTier(self.stdout, region_code, "Challenger")
+			shelf.sync()
+			
+			shelf[ region_code + '_challenger_ids' ] = [ GetSummonerProfileByName(name, region_code)['id'] for name in shelf[ region_code + '_challenger_names']]
+			shelf.sync()
 		
 		shelf.close()

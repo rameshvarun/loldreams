@@ -6,6 +6,10 @@ from loldreams.models import *
 import json
 import time
 
+def home(request):
+	context = {}
+	return render(request, 'main.html', context)
+	
 def win_rate(request):
 	#Benchmarking
 	start = time.clock()

@@ -13,6 +13,17 @@ class Champion(models.Model):
 	
 	def __unicode__(self):
 		return self.name
+		
+#Region choices
+REGION_CHOICES = (
+    ('na', 'North America'),
+    ('euw', 'Europe West'),
+    ('eune', 'Europe Nordic & East')
+)
+
+#Tiers
+CHALLENGER = 0
+DIAMOND = 1
 
 # Store game information
 class Game(models.Model):
@@ -30,14 +41,4 @@ class Game(models.Model):
 	date = models.DateTimeField('Date played') #The date the game was played
 	
 	region = models.CharField(max_length=5, blank=True, choices=REGION_CHOICES) #The region in which the game was played
-	
-CHALLENGER = 0
-DIAMOND = 1
 
-#Region choices
-REGION_CHOICES = (
-    ('na', 'North America'),
-    ('euw', 'Europe West'),
-    ('eune', 'Europe Nordic & East'),
-	('br', 'Brazil')
-)
