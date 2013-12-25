@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from loldreams.models import *
 
-
 class Command(BaseCommand):
 	help = 'Deletes all games in the database.'
 	

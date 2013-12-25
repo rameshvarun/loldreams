@@ -1,0 +1,244 @@
+{% extends "main.html" %}
+
+{% block title%}LoL Dreams - Homepage{% endblock %}
+
+{% block content%}
+
+<style>
+.champion-image {
+	max-width:50px;
+}
+.champion-title {
+	padding-left:5px;
+}
+
+.champion_select {
+	width: 100%;
+}
+.region_select {
+	width: 100%;
+}
+</style>
+
+
+
+<div class="container">
+
+	<div class="row">
+		<div class="col-md-2">
+			<select class="region_select" id="region_select">
+				<option value="na">North America</option>
+				<option value="euw">Europe West</option>
+				<option value="eune">Europe Nordic & East</option>
+			</select>
+		</div>
+		<div class="col-md-10">
+			<select multiple class="champion_select" id="champion_select">
+				{% for champion in champions %}
+					<option value="{{ champion.riotid }}">{{ champion.name }}</option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+
+	<div id="results" hidden=true>
+		<br>
+		<div class="row">
+			<div class="col-md-8">
+				<div class="panel panel-default panel-info">
+					<div class="panel-heading">Match Statistics</div>
+					<div class="panel-body">
+						<table>
+							<tr>
+								<td style="font-weight:bold;">Win Rate: </td><td><div id="result_winrate"></div></td>
+							</tr>
+							<tr>
+								<td style="font-weight:bold;">Sample Size: </td><td><div id="result_samplesize"></div></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Get Reccomendations</button>
+				<div class="progress progress-striped active">
+					<div id="reccomendation_progress" class="progress-bar"  role="progressbar" style="width: 0%">
+					</div>
+				</div>
+				<div id="reccomendations_table"></div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="query_error" hidden=true class="row">
+		<div class="col-md-12">
+			<br>
+			<div class="alert alert-danger">Could not find results.</div>
+		</div>
+	</div>
+	
+	
+	
+
+</div>
+
+<script>
+CHAMPIONS = [
+	{% for champion in champions %}
+		{
+			"id" : "{{ champion.riotid }}",
+			"name" : "{{ champion.name }}"
+		},
+	{% endfor %}
+]
+
+var champion_version = "3.15.5";
+function getChampionThumbnail(name) {
+	return "http://ddragon.leagueoflegends.com/cdn/" + champion_version + "/img/champion/" + name + ".png";
+}
+
+function formatResult(champion) {
+	if(!champion.text) champion.text = champion.name;
+	
+	var markup = "<table class='champion-result'><tr>";
+	markup += "<td class='champion-image-container'><img class='champion-image' src='" + getChampionThumbnail(champion.text) + "'/></td>";
+	markup += "<td class='champion-info'><div class='champion-title'>" + (champion.text) + "</div></td>";
+	markup += "</tr></table>"
+	
+	return markup;
+}
+
+function formatSelection(champion) {
+	return champion.text;
+}
+	
+$(document).ready(function() {
+	$("#region_select").select2({});
+	
+	$("#champion_select").select2({
+		//maximumSelectionSize: 5,
+		formatSelection: formatResult,
+		formatResult: formatResult
+	});
+	
+	function update_winrate() {
+		var champions = $("#champion_select").val();
+		var region = $("#region_select").val()
+		
+		if(champions && region) {
+			var url = "/win_rate?" + $.param({
+				region : region,
+				id : champions
+			}, true)
+			
+			$.getJSON( url , function( data ) {
+				if( data.winrate ) {
+					$("#results").slideDown()
+					$("#query_error").slideUp()
+					
+					console.log(data)
+					$('#result_winrate').html(Math.round( data.winrate * 100) + "%")
+					$('#result_samplesize').html(data.sample_size)
+				}
+				else {
+					$("#results").slideUp()
+					$("#query_error").slideDown()
+				}
+			} );
+		}
+		else {
+			$("#results").slideUp()
+			$("#query_error").slideUp()
+		}
+		
+		$('#reccomendations_table').html("");
+		$('.progress').hide()
+		$('#evaluate_team').show()
+	}
+	
+	$("#champion_select").on("change", update_winrate );
+	$("#region_select").on("change", update_winrate );
+	
+	//First get version numbers needed for obtaining champion thumbnails
+	var na_json = "http://ddragon.leagueoflegends.com/realms/na.json";
+	$.getJSON( na_json , function( data ) {
+		console.log(data.n.champion)
+	} );
+	
+	function reccomendations_table_html(reccomendations) {
+		if( reccomendations.length > 0 ) {
+			html = "<table class='tablesorter tablesorter-ice'>";
+			html += "<thead><tr><th>Champion</th><th>Win Rate</th><th>Sample Size</th></tr></thead>"
+			
+			html += "<tbody>"
+			$.each(reccomendations, function(index, champion) {
+				html += "<tr>";
+				
+				html += "<td>" + formatResult(champion) + "</id>";
+				html += "<td>" + Math.round( champion.winrate * 100) + "%" + "</id>";
+				html += "<td>" + champion.samplesize + "</id>";
+				
+				html += "</tr>";
+			});
+			html += "</tbody>"
+			
+			html += "</table>";
+		
+			return html;
+		}
+		else {
+			return "<div class='alert alert-danger'>Could not get reccomendations.</div>";
+		}
+	}
+	
+	//Reccomendation search
+	$('#evaluate_team').click(function() {
+		$('#evaluate_team').hide()
+		$('.progress').show()
+		reccomendations = []
+		
+		$('#reccomendation_progress').css("width", "0%");
+		
+		var progress = 0;
+		function incrementProgress() {
+			++progress;
+			var percent = ((progress)*100.0)/CHAMPIONS.length;
+			$('#reccomendation_progress').css("width", percent + "%");
+			
+			if( progress == (CHAMPIONS.length - $("#champion_select").val().length) ) {
+				$('#reccomendations_table').html( reccomendations_table_html(reccomendations) )
+				$(".tablesorter").tablesorter( {
+					sortList: [[1,1]]
+				});
+				$('.progress').hide()
+			}
+		}
+		
+		$.each(CHAMPIONS, function(index, champion) {
+			if( $.inArray(champion.id, $('#champion_select').val() ) < 0) {
+				var region = $("#region_select").val();
+				var champions = $("#champion_select").val();
+				champions.push(champion.id)
+				
+				var url = "/win_rate?" + $.param({
+					region : region,
+					id : champions
+				}, true)
+				
+				$.getJSON( url , function( data ) {
+					if(data.winrate && data.sample_size > 5) {
+						champion.winrate = data.winrate
+						champion.samplesize = data.sample_size
+						
+						reccomendations.push(champion)
+					}
+					
+					incrementProgress()
+				});
+			}
+		});
+	})
+});
+</script>
+
+{% endblock %}

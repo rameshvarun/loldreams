@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
 from loldreams.models import *
-
 from datetime import *
 
 DAYS = 28

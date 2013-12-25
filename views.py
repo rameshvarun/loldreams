@@ -7,16 +7,19 @@ import json
 import time
 
 def home(request):
-	context = {}
-	return render(request, 'main.html', context)
+	context = {
+		"champions" : Champion.objects.all()
+	}
+	
+	return render(request, 'home.html', context)
 	
 def win_rate(request):
 	#Benchmarking
 	start = time.clock()
 	
 	#Need to have two queries, as the specific champion combination might match either team1 or team2
-	team1_games = Game.objects.all()
-	team2_games = Game.objects.all()
+	team1_games = Game.objects.filter(region = request.GET['region'] )
+	team2_games = Game.objects.filter(region = request.GET['region'] )
 	
 	#Filter down by champion id
 	for champion_id in request.GET.getlist('id'):
