@@ -8,8 +8,8 @@ from HTMLParser import HTMLParser
 import urllib2
 import urllib
 import time
-import shelve
 import json
+import cPickle
 
 API_BASE_URL = 'https://prod.api.pvp.net/api/lol'
 
@@ -75,18 +75,16 @@ def GetSummonerProfileByName(name, region):
 	print url
 	return json.loads( urllib2.urlopen(url).read() )
 			
+
 class Command(BaseCommand):
 	help = 'Update the stored challenger ladder.'
 	
 	def handle(self, *args, **options):
-		#Store the ladder data in a python 'shelf'
-		shelf = shelve.open("ladder.cache")
+		#Store the ladder data in redis
+		db = RedisConnection()
 		
 		for region_code, region_name in REGION_CHOICES: #For each region specified in the models file
-			shelf[ region_code + '_challenger_names'] = GetSummonersInTier(self.stdout, region_code, "Challenger")
-			shelf.sync()
-			
-			shelf[ region_code + '_challenger_ids' ] = [ GetSummonerProfileByName(name, region_code)['id'] for name in shelf[ region_code + '_challenger_names']]
-			shelf.sync()
-		
-		shelf.close()
+			summoner_names = GetSummonersInTier(self.stdout, region_code, "Challenger")
+			db.set( region_code + '_challenger_names',  cPickle.dumps(summoner_names) )
+			summoner_ids = [ GetSummonerProfileByName(name, region_code)['id'] for name in summoner_names]
+			db.set( region_code + '_challenger_ids', cPickle.dumps(summoner_ids) )

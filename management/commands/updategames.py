@@ -9,9 +9,9 @@ from HTMLParser import HTMLParser
 import urllib2
 import urllib
 import time
-import shelve
 import json
 import datetime
+import cPickle
 
 API_BASE_URL = 'https://prod.api.pvp.net/api/lol'
 	
@@ -28,12 +28,12 @@ class Command(BaseCommand):
 	help = 'Populate the database with parsed games from the API'
 	
 	def handle(self, *args, **options):
-		shelf = shelve.open("ladder.cache")
+		db = RedisConnection()
 		
 		for region_code, region_name in REGION_CHOICES: #For each region specified in the models file
 			self.stdout.write("Getting games for " + region_code + " challenger tier.")
 			
-			summoner_ids = shelf[ region_code + '_challenger_ids'] #Get summoner ids from challenger tier from the shelf file
+			summoner_ids = cPickle.loads( db.get( region_code + '_challenger_ids') ) #Get summoner ids from challenger tier from redis
 			
 			for id in summoner_ids:
 				for game in GetRecentGames(id, region_code):
@@ -71,6 +71,5 @@ class Command(BaseCommand):
 								
 						#Persist final game to database
 						gameObj.save()
-				
-		shelf.close() #Close shelf
+						
 		self.stdout.write( str(len(Game.objects.all())) + " game entries stored in the database." ) #Take stock of how many games are stored in the database

@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 import datetime
 
@@ -42,3 +43,9 @@ class Game(models.Model):
 	
 	region = models.CharField(max_length=5, blank=True, choices=REGION_CHOICES) #The region in which the game was played
 
+import redis
+def RedisConnection():
+	db = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
+	if hasattr( settings, 'REDIS_PASSWORD' ):
+		db.auth(settings.REDIS_PASSWORD)
+	return db
