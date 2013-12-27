@@ -45,7 +45,5 @@ class Game(models.Model):
 
 import redis
 def RedisConnection():
-	db = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
-	if hasattr( settings, 'REDIS_PASSWORD' ):
-		db.auth(settings.REDIS_PASSWORD)
+	db = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB, password=settings.REDIS_PASSWORD)
 	return db
