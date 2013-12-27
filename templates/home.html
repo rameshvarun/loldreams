@@ -71,10 +71,7 @@
 			</div>
 			<div class="col-md-4">
 				<button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Get Reccomendations</button>
-				<div class="progress progress-striped active">
-					<div id="reccomendation_progress" class="progress-bar"  role="progressbar" style="width: 0%">
-					</div>
-				</div>
+				<center><div id='spinner_container'><br><br><div id='spinner'></div></div></center>
 				<div id="reccomendations_table"></div>
 			</div>
 		</div>
@@ -186,7 +183,7 @@ $(document).ready(function() {
 				
 				html += "<td>" + formatResult(champion) + "</id>";
 				html += "<td>" + Math.round( champion.winrate * 100) + "%" + "</id>";
-				html += "<td>" + champion.samplesize + "</id>";
+				html += "<td>" + champion.sample_size + "</id>";
 				
 				html += "</tr>";
 			});
@@ -201,53 +198,36 @@ $(document).ready(function() {
 		}
 	}
 	
+	var spinner = new Spinner().spin( document.getElementById('spinner') );
+	$("#spinner_container").hide()
+	
 	//Reccomendation search
 	$('#evaluate_team').click(function() {
 		$('#evaluate_team').hide()
-		$('.progress').show()
-		reccomendations = []
 		
-		$('#reccomendation_progress').css("width", "0%");
+		var region = $("#region_select").val();
+		var champions = $("#champion_select").val();
 		
-		var progress = 0;
-		function incrementProgress() {
-			++progress;
-			var percent = ((progress)*100.0)/CHAMPIONS.length;
-			$('#reccomendation_progress').css("width", percent + "%");
-			
-			if( progress == (CHAMPIONS.length - $("#champion_select").val().length) ) {
-				$('#reccomendations_table').html( reccomendations_table_html(reccomendations) )
-				$(".tablesorter").tablesorter( {
-					sortList: [[1,1]]
-				});
-				$('.progress').hide()
+		var url = "/reccomendations?" + $.param({
+			region : region,
+			id : champions
+		}, true)
+		
+		$("#spinner_container").show()
+		
+		$.getJSON( url , function( data ) {
+			$("#spinner_container").hide()
+			if(data.error) {
+				$('#reccomendations_table').html( reccomendations_table_html( [] ) )
 			}
-		}
-		
-		$.each(CHAMPIONS, function(index, champion) {
-			if( $.inArray(champion.id, $('#champion_select').val() ) < 0) {
-				var region = $("#region_select").val();
-				var champions = $("#champion_select").val();
-				champions.push(champion.id)
-				
-				var url = "/win_rate?" + $.param({
-					region : region,
-					id : champions
-				}, true)
-				
-				$.getJSON( url , function( data ) {
-					if(data.winrate && data.sample_size > 5) {
-						champion.winrate = data.winrate
-						champion.samplesize = data.sample_size
-						
-						reccomendations.push(champion)
-					}
-					
-					incrementProgress()
-				});
+			else {
+				$('#reccomendations_table').html( reccomendations_table_html( data.champions ) )
+				$(".tablesorter").tablesorter( {
+                    sortList: [[1,1]]
+                });
 			}
 		});
-	})
+	});
 });
 </script>
 
