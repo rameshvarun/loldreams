@@ -6,12 +6,16 @@ from loldreams.models import *
 import json
 import time
 
+from django.views.decorators.cache import cache_page
+
 def jsonResponse(jsonDict):
 	return HttpResponse(json.dumps(jsonDict, indent=4), content_type="application/json")
 
+@cache_page(60) #Cache page on timeout of one minute
 def home(request):
 	context = {
-		"champions" : Champion.objects.all()
+		"champions" : Champion.objects.all(),
+		"numgames" : len(Game.objects.all())
 	}
 	
 	return render(request, 'home.html', context)

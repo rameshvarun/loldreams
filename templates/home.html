@@ -25,7 +25,7 @@
 <div class="container">
     <div class="jumbotron">
       <div class="container">
-        <h1> Varun is sexy</h1>
+        <h1>Dream On.</h1>
       </div>
     </div>
 
@@ -83,10 +83,9 @@
 			<div class="alert alert-danger">Could not find results.</div>
 		</div>
 	</div>
+	<br>
 	
-	
-	
-
+	<p id='numgames' align="right"> Tracking {{ numgames }} games across NA, EUW, and EUNE.</p>
 </div>
 
 <script>
@@ -133,6 +132,8 @@ $(document).ready(function() {
 		var region = $("#region_select").val()
 		
 		if(champions && region) {
+			$('#numgames').fadeOut()
+			
 			var url = "/win_rate?" + $.param({
 				region : region,
 				id : champions
@@ -156,6 +157,7 @@ $(document).ready(function() {
 		else {
 			$("#results").slideUp()
 			$("#query_error").slideUp()
+			$('#numgames').fadeIn()
 		}
 		
 		$('#reccomendations_table').html("");
