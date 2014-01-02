@@ -4,6 +4,7 @@ from django.conf import settings
 from loldreams.models import *
 
 from HTMLParser import HTMLParser
+from django.core.cache import cache
 
 import urllib2
 import urllib
@@ -15,7 +16,7 @@ API_BASE_URL = 'https://prod.api.pvp.net/api/lol'
 
 LADDER_URLS = {
 	CHALLENGER : ['http://www.lolsummoners.com/leagues/challenger/solo/REGION'],
-	DIAMONDI : ['http://www.lolsummoners.com/leagues/solo/REGION/Diamond/Varus%27s%20Warmongers/I']
+	DIAMONDI : ['http://www.lolsummoners.com/leagues/solo/REGION/Diamond/Varus%27s%20Warmongers/I', 'http://www.lolsummoners.com/leagues/solo/REGION/Diamond/Zilean%27s%20Urfriders/I']
 }
 
 #Parsing class for parsing lolsummoner.com
@@ -45,8 +46,17 @@ class LadderParser(HTMLParser):
 	def handle_data(self, data):
 		pass
 			
+CACHE_LADDER_TIME = 60 * 60 * 24 * 3 #Cache ladder for three days
+
 #Given a region and a tier, returns all summoners in the tier
 def GetSummonersInTier(out, region, tier):
+	hash = region + str(tier)
+	
+	if hash in cache:
+		summoner_ids = cache.get(hash)
+		print "\t\t", len(summoner_ids), " total"
+		return summoner_ids
+	
 	summoner_ids = []
 	for url in LADDER_URLS[tier]:
 		new_url = url.replace('REGION', region)
@@ -60,22 +70,5 @@ def GetSummonersInTier(out, region, tier):
 		summoner_ids.extend( parser.summoner_ids )
 		
 	print "\t\t", len(summoner_ids), " total"
+	cache.set(hash, summoner_ids, CACHE_LADDER_TIME)
 	return summoner_ids
-class Command(BaseCommand):
-	help = 'Update the stored challenger ladder.'
-	
-	def handle(self, *args, **options):
-		#Benchmarking
-		start = time.clock()
-		
-		#Store the ladder data in redis
-		db = RedisConnection()
-		
-		for region_code, region_name in REGION_CHOICES: #For each region specified in the models file
-			self.stdout.write(region_name)
-			for tier in LADDER_URLS.keys(): #For each of the tiers in that region
-				self.stdout.write("\t" + dict(TIER_CHOICES)[tier])
-				summoner_ids = GetSummonersInTier(self.stdout, region_code, tier)
-				db.set( region_code + str(tier), cPickle.dumps(summoner_ids) )
-			
-		print "Finished updating ladders in " + str(time.clock() - start) + " seconds."

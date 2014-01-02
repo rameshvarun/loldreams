@@ -5,6 +5,7 @@ from loldreams.models import *
 
 from HTMLParser import HTMLParser
 
+from loldreams.management.commands._ladder import GetSummonersInTier
 
 import urllib2
 import urllib
@@ -33,15 +34,13 @@ class Command(BaseCommand):
 	def handle(self, *args, **options):
 		#Benchmarking
 		start = time.clock()
-		
-		db = RedisConnection()
-		
+
 		for region_code, region_name in REGION_CHOICES: #For each region specified in the models file
 			self.stdout.write(region_name)
 			for tier_code, tier_name in TIER_CHOICES: #For each tier
 				self.stdout.write("\t" + tier_name + " games.")
 				
-				summoner_ids = cPickle.loads( db.get( region_code + str(tier_code) ) ) #Get summoner ids from redis
+				summoner_ids = GetSummonersInTier(self.stdout, region_code, tier_code)
 				
 				for id in summoner_ids:
 					for game in GetRecentGames(id, region_code):

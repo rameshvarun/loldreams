@@ -15,7 +15,8 @@ def jsonResponse(jsonDict):
 def home(request):
 	context = {
 		"champions" : Champion.objects.all(),
-		"numgames" : len(Game.objects.all())
+		"numgames" : len(Game.objects.all()),
+		"comments_enabled" : True
 	}
 	
 	return render(request, 'home.html', context)

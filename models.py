@@ -69,8 +69,3 @@ class Game(models.Model):
 	date = models.DateTimeField('Date played') #The date the game was played
 	
 	region = models.CharField(max_length=5, blank=True, choices=REGION_CHOICES) #The region in which the game was played
-
-import redis
-def RedisConnection():
-	db = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB, password=settings.REDIS_PASSWORD)
-	return db
