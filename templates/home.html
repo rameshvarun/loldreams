@@ -51,7 +51,7 @@
 		<div class="col-md-10">
 			<select multiple class="champion_select" id="champion_select">
 				{% for champion in champions %}
-					<option value="{{ champion.riotid }}">{{ champion.name }}</option>
+					<option value="{{ champion.riotid }}">{{ champion.full_name }}</option>
 				{% endfor %}
 			</select>
 		</div>
@@ -99,7 +99,8 @@ CHAMPIONS = [
 	{% for champion in champions %}
 		{
 			"id" : "{{ champion.riotid }}",
-			"name" : "{{ champion.name }}"
+			"name" : "{{ champion.name }}",
+			"full_name" : "{{ champion.full_name }}"
 		},
 	{% endfor %}
 ]
@@ -110,11 +111,18 @@ function getChampionThumbnail(name) {
 }
 
 function formatResult(champion) {
-	if(!champion.text) champion.text = champion.name;
+	var data = null;
+	console.log(champion)
+	
+	for(var i = 0; i < CHAMPIONS.length; ++i) {
+		if(CHAMPIONS[i].id == champion.id) {
+			data = CHAMPIONS[i];
+		}
+	}
 	
 	var markup = "<table  class='champion-result'><tr>";
-	markup += "<td class='champion-image-container'><img class='champion-image' src='" + getChampionThumbnail(champion.text) + "'/></td>";
-	markup += "<td class='champion-info'><div class='champion-title'>" + (champion.text) + "</div></td>";
+	markup += "<td class='champion-image-container'><img class='champion-image' src='" + getChampionThumbnail(data.name) + "'/></td>";
+	markup += "<td class='champion-info'><div class='champion-title'>" + data.full_name + "</div></td>";
 	markup += "</tr></table>"
 	
 	return markup;

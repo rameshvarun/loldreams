@@ -99,6 +99,7 @@ def reccomendations(request):
 				wins = len(possible_team1) + len(possible_team2)
 				
 				result['name'] = champion.name
+				result['id'] = champion.riotid
 				result['winrate'] = float(wins)/sample_size
 				result['sample_size'] = sample_size
 				

@@ -2,6 +2,24 @@ from django.db import models
 from django.conf import settings
 
 import datetime
+import json
+import urllib2
+
+na_json = None
+def get_na_json():
+	global na_json
+	if na_json == None:
+		url = "http://ddragon.leagueoflegends.com/realms/na.json"
+		na_json = json.loads( urllib2.urlopen(url).read() )
+	return na_json
+	
+champion_json = None
+def get_champion_json():
+	global champion_json
+	if champion_json == None:
+		url = "http://ddragon.leagueoflegends.com/cdn/" + get_na_json()['n']['champion'] + "/data/en_US/champion.json"
+		champion_json = json.loads( urllib2.urlopen(url).read() )
+	return champion_json
 
 # Champion model
 class Champion(models.Model):
@@ -14,6 +32,11 @@ class Champion(models.Model):
 	
 	def __unicode__(self):
 		return self.name
+		
+	def info(self):
+		return get_champion_json()['data'][self.name]
+	def full_name(self):
+		return self.info()['name']
 		
 #Region choices
 REGION_CHOICES = (
