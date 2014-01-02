@@ -47,7 +47,11 @@ REGION_CHOICES = (
 
 #Tiers
 CHALLENGER = 0
-DIAMOND = 1
+DIAMONDI = 1
+TIER_CHOICES = (
+	(CHALLENGER, "Challenger"),
+	(DIAMONDI, "Diamond I")
+)
 
 # Store game information
 class Game(models.Model):

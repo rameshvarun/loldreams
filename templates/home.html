@@ -48,12 +48,16 @@
 				<option value="eune">Europe Nordic & East</option>
 			</select>
 		</div>
-		<div class="col-md-10">
+		<div class="col-md-8">
 			<select multiple class="champion_select" id="champion_select">
 				{% for champion in champions %}
 					<option value="{{ champion.riotid }}">{{ champion.full_name }}</option>
 				{% endfor %}
 			</select>
+		</div>
+		<div class="col-md-2">
+			<label><input class='tierselect' name='0' type="checkbox" checked='true'> Challenger</label><br>
+			<label><input class='tierselect' name='1' type="checkbox" checked='true'> Diamond 1</label>
 		</div>
 	</div>
 
@@ -76,7 +80,7 @@
 				</div>
 			</div>
 			<div class="col-md-4">
-				<button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Get Reccomendations</button>
+				<button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Get Recommendations</button>
 				<center><div id='spinner_container'><br><br><div id='spinner'></div></div></center>
 				<div id="reccomendations_table"></div>
 			</div>
@@ -112,7 +116,6 @@ function getChampionThumbnail(name) {
 
 function formatResult(champion) {
 	var data = null;
-	console.log(champion)
 	
 	for(var i = 0; i < CHAMPIONS.length; ++i) {
 		if(CHAMPIONS[i].id == champion.id) {
@@ -144,13 +147,15 @@ $(document).ready(function() {
 	function update_winrate() {
 		var champions = $("#champion_select").val();
 		var region = $("#region_select").val()
+		var tiers = $(".tierselect:checked").map(function() { return this.name }).get()
 		
-		if(champions && region) {
+		if(champions && region && tiers.length > 0) {
 			$('#numgames').fadeOut()
 			
 			var url = "/win_rate?" + $.param({
 				region : region,
-				id : champions
+				id : champions,
+				tier : tiers
 			}, true)
 			
 			$.getJSON( url , function( data ) {
@@ -181,11 +186,12 @@ $(document).ready(function() {
 	
 	$("#champion_select").on("change", update_winrate );
 	$("#region_select").on("change", update_winrate );
+	$(".tierselect").change( update_winrate );
 	
 	//First get version numbers needed for obtaining champion thumbnails
 	var na_json = "http://ddragon.leagueoflegends.com/realms/na.json";
 	$.getJSON( na_json , function( data ) {
-		console.log(data.n.champion)
+		
 	});
 
 	
@@ -224,10 +230,12 @@ $(document).ready(function() {
 		
 		var region = $("#region_select").val();
 		var champions = $("#champion_select").val();
+		var tiers = $(".tierselect:checked").map(function() { return this.name }).get();
 		
 		var url = "/reccomendations?" + $.param({
 			region : region,
-			id : champions
+			id : champions,
+			tier : tiers
 		}, true)
 		
 		$("#spinner_container").show()
@@ -245,6 +253,7 @@ $(document).ready(function() {
 			}
 		});
 	});
+	
 });
 </script>
 

@@ -13,14 +13,18 @@ import cPickle
 
 API_BASE_URL = 'https://prod.api.pvp.net/api/lol'
 
+LADDER_URLS = {
+	CHALLENGER : ['http://www.lolsummoners.com/leagues/challenger/solo/REGION'],
+	DIAMONDI : ['http://www.lolsummoners.com/leagues/solo/REGION/Diamond/Taric%27s%20Shadehunters/I']
+}
+
 #Parsing class for parsing lolsummoner.com
 class LadderParser(HTMLParser):
 	def __init__(self, out):
 		self.out = out
 		self.tags = [] #A stack of tags, to help search for patterns
 		
-		self.summoners = []
-		self.currentSummoner = []
+		self.summoner_ids = []
 		
 		HTMLParser.__init__(self)
 		
@@ -28,63 +32,48 @@ class LadderParser(HTMLParser):
 		element = dict(attrs)
 		element['tagName'] = tag
 		self.tags.insert(0, element)
-		
-		if element['tagName'] == 'tr' and 'class' in element and element['class'] == 'row1':
-			self.currentSummoner = []
+		try:
+			if self.tags[0]['tagName'] == 'a': #An <a>
+				if self.tags[1]['tagName'] == 'td':	#Within a <td>
+					if self.tags[2]['tagName'] == 'tr':	#Within a <tr>
+						self.summoner_ids.append( self.tags[0]['href'].split('/')[-1] )
+		except:
+			pass
 	def handle_endtag(self, tag):
 		element = self.tags.pop(0)
 		
-		if element['tagName'] == 'tr' and 'class' in element and element['class'] == 'row1':
-			self.summoners.append( { 
-				'name' : self.currentSummoner[1],
-				'tier' : self.currentSummoner[2]
-				} )
 	def handle_data(self, data):
-		if data.strip():
-			self.currentSummoner.append(data.strip())
+		pass
 			
 #Given a region and a tier, returns all summoners in the tier
 def GetSummonersInTier(out, region, tier):
-	summoners = []
-	out.write('Getting a list of all summoner names in tier ' + tier + ' and region ' + region)
-	
-	page = 1
-	tierStarted = False
-	while True:
-		out.write('Page ' + str(page))
+	for url in LADDER_URLS[tier]:
+		new_url = url.replace('REGION', region)
+		out.write("\t\t" + new_url)
 		
-		url = 'http://www.lolsummoners.com/ladder/' + region + '/' + str(page)
 		parser = LadderParser(out)
-		parser.feed( urllib2.urlopen(url).read() )
-		
-		for summoner in parser.summoners:
-			if summoner['tier'].lower() == tier.lower():
-				tierStarted = True
-				summoners.append( summoner['name'] )
-			else:
-				if tierStarted:
-					out.write(str(len(summoners)) + " summoners found.")
-					return summoners
-					
+		parser.feed( urllib2.urlopen(new_url).read() )
 		time.sleep(1)
-		page += 1
 		
-def GetSummonerProfileByName(name, region):
-	time.sleep(1)
-	url = API_BASE_URL + '/' + region + '/v1.1/summoner/by-name/' + urllib.quote( name ) + '?api_key=' + settings.RIOT_API_KEY
-	print url
-	return json.loads( urllib2.urlopen(url).read() )
-			
+		print "\t\t", len(parser.summoner_ids), " summoners found."
+		
+		return parser.summoner_ids
 
 class Command(BaseCommand):
 	help = 'Update the stored challenger ladder.'
 	
 	def handle(self, *args, **options):
+		#Benchmarking
+		start = time.clock()
+		
 		#Store the ladder data in redis
 		db = RedisConnection()
 		
 		for region_code, region_name in REGION_CHOICES: #For each region specified in the models file
-			summoner_names = GetSummonersInTier(self.stdout, region_code, "Challenger")
-			db.set( region_code + '_challenger_names',  cPickle.dumps(summoner_names) )
-			summoner_ids = [ GetSummonerProfileByName(name, region_code)['id'] for name in summoner_names]
-			db.set( region_code + '_challenger_ids', cPickle.dumps(summoner_ids) )
+			self.stdout.write(region_name)
+			for tier in LADDER_URLS.keys(): #For each of the tiers in that region
+				self.stdout.write("\t" + dict(TIER_CHOICES)[tier])
+				summoner_ids = GetSummonersInTier(self.stdout, region_code, tier)
+				db.set( region_code + str(tier), cPickle.dumps(summoner_ids) )
+			
+		print "Finished updating ladders in " + str(time.clock() - start) + " seconds."
