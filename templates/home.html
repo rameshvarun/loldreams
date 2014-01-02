@@ -23,6 +23,13 @@
 	max-width:100%;
 	border-radius: 15px;
 }
+
+.champion-result>tbody>tr>td {
+	border-style:none;
+	vertical-align:middle;
+	font-weight:bold;
+}
+
 </style>
 
 <div class="container">
@@ -105,7 +112,7 @@ function getChampionThumbnail(name) {
 function formatResult(champion) {
 	if(!champion.text) champion.text = champion.name;
 	
-	var markup = "<table class='champion-result'><tr>";
+	var markup = "<table  class='champion-result'><tr>";
 	markup += "<td class='champion-image-container'><img class='champion-image' src='" + getChampionThumbnail(champion.text) + "'/></td>";
 	markup += "<td class='champion-info'><div class='champion-title'>" + (champion.text) + "</div></td>";
 	markup += "</tr></table>"
@@ -171,7 +178,8 @@ $(document).ready(function() {
 	var na_json = "http://ddragon.leagueoflegends.com/realms/na.json";
 	$.getJSON( na_json , function( data ) {
 		console.log(data.n.champion)
-	} );
+	});
+
 	
 	function reccomendations_table_html(reccomendations) {
 		if( reccomendations.length > 0 ) {
