@@ -15,7 +15,7 @@ API_BASE_URL = 'https://prod.api.pvp.net/api/lol'
 
 LADDER_URLS = {
 	CHALLENGER : ['http://www.lolsummoners.com/leagues/challenger/solo/REGION'],
-	DIAMONDI : ['http://www.lolsummoners.com/leagues/solo/REGION/Diamond/Taric%27s%20Shadehunters/I']
+	DIAMONDI : ['http://www.lolsummoners.com/leagues/solo/REGION/Diamond/Varus%27s%20Warmongers/I']
 }
 
 #Parsing class for parsing lolsummoner.com
@@ -47,18 +47,20 @@ class LadderParser(HTMLParser):
 			
 #Given a region and a tier, returns all summoners in the tier
 def GetSummonersInTier(out, region, tier):
+	summoner_ids = []
 	for url in LADDER_URLS[tier]:
 		new_url = url.replace('REGION', region)
-		out.write("\t\t" + new_url)
+		out.write("\t\t\t" + new_url)
 		
 		parser = LadderParser(out)
 		parser.feed( urllib2.urlopen(new_url).read() )
 		time.sleep(1)
 		
-		print "\t\t", len(parser.summoner_ids), " summoners found."
+		print "\t\t\t", len(parser.summoner_ids), " summoners found."
+		summoner_ids.extend( parser.summoner_ids )
 		
-		return parser.summoner_ids
-
+	print "\t\t", len(summoner_ids), " total"
+	return summoner_ids
 class Command(BaseCommand):
 	help = 'Update the stored challenger ladder.'
 	

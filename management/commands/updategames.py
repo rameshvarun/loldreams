@@ -16,10 +16,13 @@ import cPickle
 API_BASE_URL = 'https://prod.api.pvp.net/api/lol'
 	
 def GetRecentGames(id, region):
-	time.sleep(1)
-	url = API_BASE_URL + '/' + region + '/v1.1/game/by-summoner/' + str(id) + '/recent?api_key=' + settings.RIOT_API_KEY
-	print url
-	return json.loads( urllib2.urlopen(url).read() )['games']
+	time.sleep(1) #Rate limit API calls
+	try:
+		url = API_BASE_URL + '/' + region + '/v1.1/game/by-summoner/' + str(id) + '/recent?api_key=' + settings.RIOT_API_KEY
+		return json.loads( urllib2.urlopen(url).read() )['games']
+	except:
+		print "Error getting games, returning empty list."
+		return []
 	
 def GetChampionById(id):
 	return Champion.objects.get(riotid=id)
