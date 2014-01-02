@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-
+from django.core.cache import cache
 from loldreams.models import *
 
 import json
@@ -11,7 +11,7 @@ from django.views.decorators.cache import cache_page
 def jsonResponse(jsonDict):
 	return HttpResponse(json.dumps(jsonDict, indent=4), content_type="application/json")
 
-@cache_page(60) #Cache page on timeout of one minute
+@cache_page(60 * 60) #Cache page on timeout of one hour
 def home(request):
 	context = {
 		"champions" : Champion.objects.all(),
@@ -20,6 +20,7 @@ def home(request):
 	
 	return render(request, 'home.html', context)
 	
+CACHE_RESULT_TIME = 60 * 60 #Cache win-rate and recommendation for one hour
 def win_rate(request):
 	#Benchmarking
 	start = time.clock()
@@ -27,6 +28,10 @@ def win_rate(request):
 	#Create a hash, to be used eventually for caching results
 	hash = 'w' + request.GET['region'] + ','.join(sorted(request.GET.getlist('tier'))) + ','.join(sorted(request.GET.getlist('id')))
 	
+	#Check if the result is already in the cache
+	if hash in cache:
+		return HttpResponse( cache.get(hash), content_type="application/json")
+		
 	#Need to have two queries, as the specific champion combination might match either team1 or team2
 	team1_games = Game.objects.filter(region = request.GET['region'] )
 	team2_games = Game.objects.filter(region = request.GET['region'] )
@@ -57,8 +62,11 @@ def win_rate(request):
 	#If we can, calculate a win rate
 	if sample_size > 0:
 		response['winrate'] = (float(wins)/(wins + losses))
-		
-	return jsonResponse(response)
+	
+	#Put result in cache, then return
+	json_string = json.dumps(response, indent=4)
+	cache.set(hash, json_string, CACHE_RESULT_TIME)
+	return HttpResponse( json_string, content_type="application/json")
 	
 SMALLEST_SAMPLE_SIZE = 10
 	
@@ -69,6 +77,10 @@ def reccomendations(request):
 	#Create a hash, to be used eventually for caching results
 	hash = 'r' + request.GET['region'] + ','.join(sorted(request.GET.getlist('tier'))) + ','.join(sorted(request.GET.getlist('id')))
 	
+	#Check if the result is already in the cache
+	if hash in cache:
+		return HttpResponse( cache.get(hash), content_type="application/json")
+		
 	#Need to have two queries, as the specific champion combination might match either team1 or team2
 	team1_games = Game.objects.filter(region = request.GET['region'] )
 	team2_games = Game.objects.filter(region = request.GET['region'] )
@@ -111,4 +123,8 @@ def reccomendations(request):
 				response['champions'].append(result)
 	
 	response['time'] = time.clock() - start
-	return jsonResponse(response)
+	
+	#Put result in cache, then return
+	json_string = json.dumps(response, indent=4)
+	cache.set(hash, json_string, CACHE_RESULT_TIME)
+	return HttpResponse( json_string, content_type="application/json")
