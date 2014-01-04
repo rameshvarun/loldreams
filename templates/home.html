@@ -6,17 +6,25 @@
 	.champion-title { padding-left:5px; } 
 	.champion_select { width: 100%; } 
 	.region_select { width: 100%; } 
-	.logo { max-width:100%; border-radius: 15px; } 
+	.logo { width:100%; max-width:650px; } 
 	.champion-result>tbody>tr>td { border-style:none; vertical-align:middle; font-weight:bold;}
 
+	#maincontent {
+		background-color:#FFFFFF;
+		//border-radius: 15px;
+		padding-bottom:25px;
+		padding-left:30px;
+		padding-right:30px;
+	}
 </style>
 
-<div class="container">
 
-	<img class='logo' src='http://www.loldreams.com/logo/1140w_trans.png'></img>
+
+<div id="maincontent" class="container">
+
 	
 	<div class="page-header">
-		<h1 style="color:white">Query a Champion Combination</h1>
+		<h1>Query a Champion Combination</h1>
 	</div>
 
 	<div class="row">
@@ -80,6 +88,17 @@
 	
 	<p id='numgames' align="right"> Tracking {{ numgames }} games across NA, EUW, and EUNE.</p>
 </div>
+
+    
+<div id="footer" class="container">
+	<p class="text-muted">
+	Developed by <a href="http://www.varunramesh.net/">Varun Ramesh</a>.
+	Logo by Angeline Xiong.
+	Idea by Alfred Xue.
+	Some Icons from <a href="http://glyphicons.com/">Glyphicons</a>.
+	</p>
+</div>
+    
 
 <script>
 CHAMPIONS = [
