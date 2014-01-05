@@ -38,6 +38,14 @@ class Champion(models.Model):
 	def full_name(self):
 		return self.info()['name']
 		
+#For creating arbitrary pages (like the about page)
+class Page(models.Model):
+	url = models.CharField( max_length=300, blank=True )
+	html = models.TextField(blank=True)
+        
+	def __unicode__(self):
+		return self.url
+		
 #Region choices
 REGION_CHOICES = (
     ('na', 'North America'),

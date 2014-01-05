@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.core.cache import cache
 from loldreams.models import *
 
+import django.template
 import json
 import time
 
@@ -16,7 +17,8 @@ def home(request):
 	context = {
 		"champions" : Champion.objects.all(),
 		"numgames" : len(Game.objects.all()),
-		"comments_enabled" : True
+		"comments_enabled" : True,
+		"page_name" : "home"
 	}
 	
 	return render(request, 'home.html', context)
@@ -129,3 +131,14 @@ def reccomendations(request):
 	json_string = json.dumps(response, indent=4)
 	cache.set(hash, json_string, CACHE_RESULT_TIME)
 	return HttpResponse( json_string, content_type="application/json")
+	
+def page(request, page_name):
+	results = Page.objects.filter(url=page_name)
+	if len(results) > 0:
+		template = django.template.Template( results[0].html )
+		context = django.template.RequestContext(request, {
+			"page_name" : page_name
+		} )
+		return HttpResponse(template.render(context))
+	else:
+		return HttpResponse( "The page at '" + page_name + "' could not be found.")
