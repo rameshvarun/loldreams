@@ -1,41 +1,15 @@
 {% extends "main.html" %}
+{% block title%}LoL Dreams - Homepage{% endblock %} 
+{% block content%} 
+	<style> 
+		.champion-image { max-width:50px; } 
+		.champion-title { padding-left:5px; } 
+		.champion_select { width: 100%; } 
+		.region_select { width: 100%; } 
+		.logo { width:100%; max-width:650px; } 
+		.champion-result>tbody>tr>td { border-style:none; vertical-align:middle; font-weight:bold;}
+	</style>
 
-{% block title%}LoL Dreams - Homepage{% endblock %}
-
-{% block content%}
-
-<style>
-.champion-image {
-	max-width:50px;
-}
-.champion-title {
-	padding-left:5px;
-}
-
-.champion_select {
-	width: 100%;
-}
-.region_select {
-	width: 100%;
-}
-
-.logo {
-	max-width:100%;
-	border-radius: 15px;
-}
-
-.champion-result>tbody>tr>td {
-	border-style:none;
-	vertical-align:middle;
-	font-weight:bold;
-}
-
-</style>
-
-<div class="container">
-
-	<img class='logo' src='http://www.loldreams.com/logo/1140w.png'></img>
-	
 	<div class="page-header">
 		<h1>Query a Champion Combination</h1>
 	</div>
@@ -56,15 +30,23 @@
 			</select>
 		</div>
 		<div class="col-md-2">
+		<center>
 			<label><input class='tierselect' name='0' type="checkbox" checked='true'> Challenger</label><br>
 			<label><input class='tierselect' name='1' type="checkbox" checked='true'> Diamond 1</label>
+		</center>
 		</div>
 	</div>
 
 	<div id="results" hidden=true>
 		<br>
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-4 col-md-push-8">
+				<center><button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Get Recommendations</button>
+				<div id='spinner_container'><br><br><div id='spinner'></div></div></center>
+				<div id="reccomendations_table"></div>
+				<br>
+			</div>
+			<div class="col-md-8 col-md-pull-4">
 				<div class="panel panel-default panel-info">
 					<div class="panel-heading">Match Statistics</div>
 					<div class="panel-body">
@@ -83,11 +65,6 @@
 				{% if comments_enabled %} {% include "disqus.html" %} {% endif %}
 
 			</div>
-			<div class="col-md-4">
-				<button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Get Recommendations</button>
-				<center><div id='spinner_container'><br><br><div id='spinner'></div></div></center>
-				<div id="reccomendations_table"></div>
-			</div>
 		</div>
 	</div>
 	
@@ -100,7 +77,12 @@
 	<br>
 	
 	<p id='numgames' align="right"> Tracking {{ numgames }} games across NA, EUW, and EUNE.</p>
-</div>
+
+
+    
+
+    
+
 
 <script>
 CHAMPIONS = [
