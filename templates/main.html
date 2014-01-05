@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 		
 		<title>{% block title%}LoL Dreams{% endblock %}</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,19 +30,12 @@
 		body {
 			background-repeat: no-repeat;
 			background-color: #000000;
-		}
-		
-		/* Set the fixed height of the footer here */
-		#footer {
-		  background-color: #f5f5f5;
-		}
-		.text-muted {
-		  margin: 20px 0;
-		}
-
-		#footer > .container {
-		  padding-left: 15px;
-		  padding-right: 15px;
+		}		
+		#maincontent {
+			background-color:#FFFFFF;
+			padding-bottom:25px;
+			padding-left:30px;
+			padding-right:30px;
 		}
 		</style>
 	
@@ -70,8 +64,13 @@
 	
 	<center><img class='logo' src='http://www.loldreams.com/logo/1140w_trans.png'></img></center><br>
 
-	{% block content%}
-	{% endblock %}
+	<div id="maincontent" class="container">
+		{% block content%}
+		{% endblock %}
+	</div>
+	
+	{% include "footer.html" %}
+	<br><br>
 	
   </body>
 </html>
