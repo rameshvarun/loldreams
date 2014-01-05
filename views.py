@@ -11,7 +11,7 @@ from django.views.decorators.cache import cache_page
 def jsonResponse(jsonDict):
 	return HttpResponse(json.dumps(jsonDict, indent=4), content_type="application/json")
 
-@cache_page(60 * 60) #Cache page on timeout of one hour
+@cache_page(60 * 60 * 24) #Cache page on timeout of one whole day
 def home(request):
 	context = {
 		"champions" : Champion.objects.all(),
@@ -21,7 +21,7 @@ def home(request):
 	
 	return render(request, 'home.html', context)
 	
-CACHE_RESULT_TIME = 60 * 60 #Cache win-rate and recommendation for one hour
+CACHE_RESULT_TIME = 60 * 60 * 24 #Cache win-rate and recommendations for one whole day
 def win_rate(request):
 	#Benchmarking
 	start = time.clock()
