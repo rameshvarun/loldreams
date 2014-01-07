@@ -18,6 +18,7 @@ def home(request):
 		"champions" : Champion.objects.all(),
 		"numgames" : len(Game.objects.all()),
 		"comments_enabled" : True,
+		"ads_enabled" : True,
 		"page_name" : "home"
 	}
 	
