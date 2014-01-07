@@ -43,10 +43,20 @@
 		<br>
 		<div class="row">
 			<div class="col-md-4 col-md-push-8">
+
+				
 				<center><button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Get Recommendations</button>
 				<div id='spinner_container'><br><br><div id='spinner'></div></div></center>
 				<div id="reccomendations_table"></div>
 				<br>
+				{% if ads_enabled %}
+					<div style="width:100%; overflow:hidden;">
+						<center>
+							{% include "adsense/large_rectangle.html" %}
+						</center>
+					</div>
+					<br>
+				{% endif %}
 			</div>
 			<div class="col-md-8 col-md-pull-4">
 				<div class="panel panel-default panel-info">
