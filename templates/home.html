@@ -36,6 +36,8 @@
 		</center>
 		</div>
 	</div>
+	
+	<center><div id='spinner_container1'><br><div id='spinner1'><br></div></div></center>
 
 	<div id="results" hidden=true>
 		<br>
@@ -155,7 +157,10 @@ $(document).ready(function() {
 			
 			var url = "/win_rate?" + param_url;
 			
+			$("#spinner_container1").show()
+			
 			$.getJSON( url , function( data ) {
+				$("#spinner_container1").hide();
 				if( data.winrate ) {
 					{% if comments_enabled %} 
 					DISQUS.reset({
@@ -230,6 +235,9 @@ $(document).ready(function() {
 			return "<div class='alert alert-danger'>Could not get reccomendations.</div>";
 		}
 	}
+	
+	var spinner1 = new Spinner().spin( document.getElementById('spinner1') );
+	$("#spinner_container1").hide()
 	
 	var spinner = new Spinner().spin( document.getElementById('spinner') );
 	$("#spinner_container").hide()
