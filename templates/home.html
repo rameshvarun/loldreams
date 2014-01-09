@@ -150,6 +150,27 @@ $(document).ready(function() {
 		formatResult: formatResult
 	});
 	
+	//Check if there is a valid hashbang
+	if( window.location.hash.length > 2 ) {
+		//Restore region
+		var region = $.url().fparam('!region');
+		$("#region_select").select2("val", region);
+		
+		//Restore champions
+		var champions = $.url().fparam('id');
+		$("#champion_select").select2("val", champions);
+		
+		//Restore tier selection
+		var tiers = [].concat( $.url().fparam('tier') );
+		$("input[type='checkbox']").prop('checked', false);
+		$.each( tiers, function(i, tier) {
+			$("[name='" + tier + "']").prop('checked', true);
+		});
+		
+		//Re-perform query
+		setTimeout(function(){update_winrate()},100);
+	}
+	
 	function update_winrate() {
 		var champions = $("#champion_select").val();
 		var region = $("#region_select").val()
