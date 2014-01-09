@@ -1,0 +1,44 @@
+{% extends "main.html" %}
+{% block title%}Champion Rankings - LoL Dreams{% endblock %}
+
+{% block content%}
+	<style> 
+		.champion-image { max-width:50px; } 
+		.champion-title { padding-left:5px; } 
+		.champion_select { width: 100%; } 
+		.region_select { width: 100%; }
+		.champion-result>tbody>tr>td { border-style:none; vertical-align:middle; font-weight:bold;}
+	</style>
+<br>
+<table class='tablesorter tablesorter-ice'>
+<thead><tr><th>Champion</th><th>Roles</th><th>Win Rate</th><th>Sample Size</th></tr></thead>
+<tbody>
+{% for champion in champions %}
+<tr>
+	<td>
+		<table  class='champion-result'><tr>
+			<td class='champion-image-container'><img class='champion-image' src='{{ champion.thumbnail }}'/></td>
+			<td class='champion-info'><div class='champion-title'> {{ champion.full_name }} </div></td>
+		</tr></table>
+	</td>
+	<td>
+	</td>
+	<td>
+	</td>
+	<td>
+	</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<script>
+$(function() {
+	$(".tablesorter").tablesorter( {
+		sortList: [[2,1]]
+	});
+})
+</script>
+
+
+{% endblock %}

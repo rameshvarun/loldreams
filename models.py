@@ -37,6 +37,8 @@ class Champion(models.Model):
 		return get_champion_json()['data'][self.name]
 	def full_name(self):
 		return self.info()['name']
+	def thumbnail(self):
+		return "http://ddragon.leagueoflegends.com/cdn/" + get_na_json()['n']['champion'] + "/img/champion/" + self.name + ".png"
 		
 #For creating arbitrary pages (like the about page)
 class Page(models.Model):

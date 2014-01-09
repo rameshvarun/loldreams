@@ -143,3 +143,13 @@ def page(request, page_name):
 		return HttpResponse(template.render(context))
 	else:
 		return HttpResponse( "The page at '" + page_name + "' could not be found.")
+		
+@cache_page(60 * 60 * 24) #Cache page on timeout of one whole day
+def champion_rankings(request):
+	context = {
+		"ads_enabled" : True,
+		"page_name" : "champions",
+		"champions" : Champion.objects.all()
+	}
+	
+	return render(request, 'champion_rankings.html', context)

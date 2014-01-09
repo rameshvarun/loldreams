@@ -1,5 +1,5 @@
 {% extends "main.html" %}
-{% block title%}LoL Dreams - Homepage{% endblock %}
+{% block title%}Homepage - LoL Dreams{% endblock %}
 
 {% block content%} 
 	<style> 
@@ -229,9 +229,9 @@ $(document).ready(function() {
 			$.each(reccomendations, function(index, champion) {
 				html += "<tr>";
 				
-				html += "<td>" + formatResult(champion) + "</id>";
-				html += "<td>" + Math.round( champion.winrate * 100) + "%" + "</id>";
-				html += "<td>" + champion.sample_size + "</id>";
+				html += "<td>" + formatResult(champion) + "</td>";
+				html += "<td>" + Math.round( champion.winrate * 100) + "%" + "</td>";
+				html += "<td>" + champion.sample_size + "</td>";
 				
 				html += "</tr>";
 			});
