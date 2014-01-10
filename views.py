@@ -24,7 +24,15 @@ def home(request):
 	
 	return render(request, 'home.html', context)
 	
-CACHE_RESULT_TIME = 60 * 60 * 24 #Cache win-rate and recommendations for one whole day
+CACHE_RESULT_TIME = 60 * 60 * 24 * 7 #Cache win-rate and recommendations for one week
+NEW_CALCULATE_TIME = 60 * 60 * 24
+'''
+Caching Logic:
+If result is in cache
+	return immediately, but if it is older than NEW_CALCULATE_TIME, calculate it after returning the response
+else:
+	calculate synchronously, and return result
+'''
 def win_rate(request):
 	#Benchmarking
 	start = time.clock()
@@ -69,7 +77,7 @@ def win_rate(request):
 	
 	#Put result in cache, then return
 	json_string = json.dumps(response, indent=4)
-	cache.set(hash, json_string, CACHE_RESULT_TIME)
+	cache.set(hash, [time.time(), json_string], CACHE_RESULT_TIME) #Put both the current epoch seconds and json result in the cache
 	return HttpResponse( json_string, content_type="application/json")
 	
 SMALLEST_SAMPLE_SIZE = 10
