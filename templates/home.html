@@ -37,7 +37,7 @@
 		</div>
 	</div>
 	
-	<center><div id='spinner_container1'><br><div id='spinner1'><br></div></div></center>
+	<center><div id='results_spinner_container'><br><div id='results_spinner'><br></div></div></center>
 
 	<div id="results" hidden=true>
 		<br>
@@ -45,11 +45,18 @@
 			<div class="col-md-4 col-md-push-8">
 
 				
-				<center><button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Get Recommendations</button>
-				<div id='spinner_container'><br><br><div id='spinner'></div></div></center>
+				<center><button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Allies</button>
+				<div id='spinner_container'><br><br><div id='spinner'><br><br></div></div></center>
 				<div id="reccomendations_table"></div>
+
 				<br>
-				{% comment %}{% if ads_enabled %}
+								
+				<center><button id="evaluate_bans" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Bans</button>
+				<div id='ban_spinner_container'><br><br><div id='ban_spinner'><br><br></div></div></center>
+				<div id="bans_table"></div>
+				
+				{% if ads_enabled %}
+					<br>
 					<div style="width:100%; overflow:hidden;">
 						<center>
 							{% include "adsense/large_rectangle.html" %}
@@ -57,7 +64,7 @@
 					</div>
 					<br>
 				{% endif %}
-				{% endcomment %}
+				
 			</div>
 			<div class="col-md-8 col-md-pull-4">
 				<div class="panel panel-default panel-info">
@@ -183,10 +190,10 @@ $(document).ready(function() {
 			
 			var url = "{% url 'loldreams:winrate' %}?" + param_url;
 			
-			$("#spinner_container1").show()
+			$("#results_spinner_container").show()
 			
 			$.getJSON( url , function( data ) {
-				$("#spinner_container1").hide();
+				$("#results_spinner_container").hide();
 				if( data.winrate ) {
 					{% if comments_enabled %} 
 					DISQUS.reset({
@@ -223,6 +230,7 @@ $(document).ready(function() {
 		$('#reccomendations_table').html("");
 		$('.progress').hide()
 		$('#evaluate_team').show()
+		$('#evaluate_bans').show()
 	}
 	
 	$("#champion_select").on("change", update_winrate );
@@ -236,9 +244,13 @@ $(document).ready(function() {
 	});
 
 	
-	function reccomendations_table_html(reccomendations) {
+	function reccomendations_table_html(reccomendations, type) {
 		if( reccomendations.length > 0 ) {
-			html = "<table class='tablesorter tablesorter-ice'>";
+			if(type == "allies")
+				html = "<h3>Ally Reccomendations</h3>"
+			else
+				html = "<h3>Ban Reccomendations</h3>"
+			html += "<table class='tablesorter tablesorter-ice'>";
 			html += "<thead><tr><th>Champion</th><th>Win Rate</th><th>Sample Size</th></tr></thead>"
 			
 			html += "<tbody>"
@@ -262,8 +274,11 @@ $(document).ready(function() {
 		}
 	}
 	
-	var spinner1 = new Spinner().spin( document.getElementById('spinner1') );
-	$("#spinner_container1").hide()
+	var results_spinner = new Spinner().spin( document.getElementById('results_spinner') );
+	$("#results_spinner_container").hide()
+	
+	var ban_spinner = new Spinner().spin( document.getElementById('ban_spinner') );
+	$("#ban_spinner_container").hide()
 	
 	var spinner = new Spinner().spin( document.getElementById('spinner') );
 	$("#spinner_container").hide()
@@ -290,9 +305,39 @@ $(document).ready(function() {
 				$('#reccomendations_table').html( reccomendations_table_html( [] ) )
 			}
 			else {
-				$('#reccomendations_table').html( reccomendations_table_html( data.champions ) )
+				$('#reccomendations_table').html( reccomendations_table_html( data.champions, "allies" ) )
 				$(".tablesorter").tablesorter( {
                     sortList: [[1,1]]
+                });
+			}
+		});
+	});
+	
+	//Ban reccomendations
+	$('#evaluate_bans').click(function() {
+		$('#evaluate_bans').hide();
+		
+		var region = $("#region_select").val();
+		var champions = $("#champion_select").val();
+		var tiers = $(".tierselect:checked").map(function() { return this.name }).get();
+		
+		var url = "{% url 'loldreams:banreccomendations' %}?" + $.param({
+			region : region,
+			id : champions,
+			tier : tiers
+		}, true)
+		
+		$("#ban_spinner_container").show()
+		
+		$.getJSON( url , function( data ) {
+			$("#ban_spinner_container").hide()
+			if(data.error) {
+				$('#bans_table').html( reccomendations_table_html( [] ) )
+			}
+			else {
+				$('#bans_table').html( reccomendations_table_html( data.champions, "bans" ) )
+				$(".tablesorter").tablesorter( {
+                    sortList: [[1,0]]
                 });
 			}
 		});

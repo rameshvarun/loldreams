@@ -6,5 +6,6 @@ urlpatterns = patterns('',
 	url(r'^$', views.home, name='home'),
 	url(r'^winrate', views.winrate, name='winrate'),
 	url(r'^reccomendations', views.reccomendations, name='reccomendations'),
+	url(r'^banreccomendations', views.banreccomendations, name='banreccomendations'),
 	#url(r'^(?P<page_name>[a-zA-Z0-9_.-/]+)', views.page, name='page')
 )
