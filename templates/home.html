@@ -46,13 +46,13 @@
 
 				
 				<center><button title="Find champions that complement your current team." id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Allies</button>
-				<div id='spinner_container'><br><br><div id='spinner'><br><br></div></div></center>
+				<div id='spinner_container'><br><br><div id='spinner'><br>This may take a minute.<br></div></div></center>
 				<div id="reccomendations_table"></div>
 
 				<br>
 								
 				<center><button title="Find champions that are strong against your current team." id="evaluate_bans" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Bans</button>
-				<div id='ban_spinner_container'><br><br><div id='ban_spinner'><br><br></div></div></center>
+				<div id='ban_spinner_container'><br><br><div id='ban_spinner'><br>This may take a minute.<br></div></div></center>
 				<div id="bans_table"></div>
 				
 				{% if ads_enabled %}
@@ -230,7 +230,7 @@ $(document).ready(function() {
 		}
 		
 		$('#reccomendations_table').html("");
-		$('.progress').hide()
+		$('#bans_table').html("");
 		$('#evaluate_team').show()
 		$('#evaluate_bans').show()
 	}
