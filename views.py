@@ -6,6 +6,7 @@ from loldreams.models import *
 import django.template
 import json
 import time
+import threading
 
 from django.views.decorators.cache import cache_page
 
@@ -24,36 +25,20 @@ def home(request):
 	
 	return render(request, 'home.html', context)
 	
-CACHE_RESULT_TIME = 60 * 60 * 24 * 7 #Cache win-rate and recommendations for one week
-NEW_CALCULATE_TIME = 60 * 60 * 24
-'''
-Caching Logic:
-If result is in cache
-	return immediately, but if it is older than NEW_CALCULATE_TIME, calculate it after returning the response
-else:
-	calculate synchronously, and return result
-'''
-def win_rate(request):
+def calc_winrate(region, tiers, champions):
 	#Benchmarking
 	start = time.clock()
 	
-	#Create a hash, to be used eventually for caching results
-	hash = 'w' + request.GET['region'] + ','.join(sorted(request.GET.getlist('tier'))) + ','.join(sorted(request.GET.getlist('id')))
-	
-	#Check if the result is already in the cache
-	if hash in cache:
-		return HttpResponse( cache.get(hash), content_type="application/json")
-		
 	#Need to have two queries, as the specific champion combination might match either team1 or team2
-	team1_games = Game.objects.filter(region = request.GET['region'] )
-	team2_games = Game.objects.filter(region = request.GET['region'] )
+	team1_games = Game.objects.filter(region = region)
+	team2_games = Game.objects.filter(region = region )
 	
 	#Filter down by tier
-	team1_games = team1_games.filter(tier__in = request.GET.getlist('tier'))
-	team2_games = team2_games.filter(tier__in = request.GET.getlist('tier'))
+	team1_games = team1_games.filter(tier__in = tiers)
+	team2_games = team2_games.filter(tier__in = tiers)
 	
 	#Filter down by champion id
-	for champion_id in request.GET.getlist('id'):
+	for champion_id in champions:
 		team1_games = team1_games.filter(team1__riotid = champion_id )
 		team2_games = team2_games.filter(team2__riotid = champion_id )
 		
@@ -74,6 +59,40 @@ def win_rate(request):
 	#If we can, calculate a win rate
 	if sample_size > 0:
 		response['winrate'] = (float(wins)/(wins + losses))
+	
+	return response
+	
+def calc_winrate_async(region, tiers, champions):
+	response = calc_winrate(region, tiers, champions)
+	
+	#Put result in cache, then return
+	json_string = json.dumps(response, indent=4)
+	cache.set(hash, [time.time(), json_string], CACHE_RESULT_TIME) #Put both the current epoch seconds and json result in the cache
+	return HttpResponse( json_string, content_type="application/json")
+
+	
+CACHE_RESULT_TIME = 60 * 60 * 24 * 7 #Cache win-rate and recommendations for one week
+NEW_CALCULATE_TIME = 60 * 60 * 24
+'''
+Caching Logic:
+If result is in cache
+	return immediately, but if it is older than NEW_CALCULATE_TIME, calculate it asynchronously after returning the response
+else:
+	calculate synchronously, and return result
+'''
+def win_rate(request):
+	#Create a hash, to be used eventually for caching results
+	hash = 'w' + request.GET['region'] + ','.join(sorted(request.GET.getlist('tier'))) + ','.join(sorted(request.GET.getlist('id')))
+	
+	#Check if the result is already in the cache
+	if hash in cache:
+		cached_value = cache.get(hash)
+		if time.time() > cached_value[0] + NEW_CALCULATE_TIME:
+			thread = threading.Thread(target=calc_winrate_async,args=(request.GET['region'], request.GET.getlist('tier'), request.GET.getlist('id')))
+			thread.start()
+		return HttpResponse( cached_value[1], content_type="application/json")
+		
+	response = calc_winrate(request.GET['region'], request.GET.getlist('tier'), request.GET.getlist('id'))
 	
 	#Put result in cache, then return
 	json_string = json.dumps(response, indent=4)
