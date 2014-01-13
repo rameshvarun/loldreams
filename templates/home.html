@@ -31,8 +31,8 @@
 		</div>
 		<div class="col-md-2">
 		<center>
-			<label><input class='tierselect' name='0' type="checkbox" checked='true'> Challenger</label><br>
-			<label><input class='tierselect' name='1' type="checkbox" checked='true'> Diamond 1</label>
+			<label title="Choose whether or not to sample games from Challenger league players." ><input class='tierselect' name='0' type="checkbox" checked='true'> Challenger</label><br>
+			<label title="Choose whether or not to sample games from Diamond league players."><input class='tierselect' name='1' type="checkbox" checked='true'> Diamond 1</label>
 		</center>
 		</div>
 	</div>
@@ -45,13 +45,13 @@
 			<div class="col-md-4 col-md-push-8">
 
 				
-				<center><button id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Allies</button>
+				<center><button title="Find champions that complement your current team." id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Allies</button>
 				<div id='spinner_container'><br><br><div id='spinner'><br><br></div></div></center>
 				<div id="reccomendations_table"></div>
 
 				<br>
 								
-				<center><button id="evaluate_bans" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Bans</button>
+				<center><button title="Find champions that are strong against your current team." id="evaluate_bans" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Bans</button>
 				<div id='ban_spinner_container'><br><br><div id='ban_spinner'><br><br></div></div></center>
 				<div id="bans_table"></div>
 				
@@ -71,7 +71,7 @@
 					<div class="panel-heading">Match Statistics</div>
 					<div class="panel-body">
 						<table>
-							<tr>
+							<tr  title='The win rate where all the given champions appear on the same team.'>
 								<td style="font-weight:bold;">Win Rate: </td><td><div id="result_winrate"></div></td>
 							</tr>
 							<tr>
@@ -144,6 +144,8 @@ function formatSelection(champion) {
 }
 	
 $(document).ready(function() {
+	$(document).tooltip();
+	
 	$("#region_select").select2({});
 	
 	$("#champion_select").select2({
@@ -251,7 +253,11 @@ $(document).ready(function() {
 			else
 				html = "<h3>Ban Reccomendations</h3>"
 			html += "<table class='tablesorter tablesorter-ice'>";
-			html += "<thead><tr><th>Champion</th><th>Win Rate</th><th>Sample Size</th></tr></thead>"
+			
+			if(type == "allies")
+				html += "<thead><tr><th>Champion</th><th title='The win rate if the given champion is added to your team.'>Win Rate</th><th>Sample Size</th></tr></thead>"
+			else
+				html += "<thead><tr><th>Champion</th><th title='The win rate where this champion is on the opposing team.'>Win Rate</th><th>Sample Size</th></tr></thead>"
 			
 			html += "<tbody>"
 			$.each(reccomendations, function(index, champion) {
