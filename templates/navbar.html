@@ -27,7 +27,7 @@
 		<nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
 			<ul class="nav navbar-nav">
 				<li {% if page_name == 'home' %} class='active' {% endif %}  >
-					<a href="/">Home</a>
+					<a href="{% url 'loldreams:home' %}">Home</a>
 				</li>
 				<!--<li>
 					<a href="/rankings">Champion Rankings</a>

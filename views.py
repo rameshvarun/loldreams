@@ -24,8 +24,8 @@ def home(request):
 	
 	return render(request, 'home.html', context)
 	
-CACHE_RESULT_TIME = 60 * 60 * 24 #Cache win-rate and recommendations for one whole day
-def win_rate(request):
+CACHE_RESULT_TIME = 60 * 60 * 24 * 2 #Cache win-rate and recommendations for two
+def winrate(request):
 	#Benchmarking
 	start = time.clock()
 	
@@ -72,7 +72,7 @@ def win_rate(request):
 	cache.set(hash, json_string, CACHE_RESULT_TIME)
 	return HttpResponse( json_string, content_type="application/json")
 	
-SMALLEST_SAMPLE_SIZE = 10
+SMALLEST_SAMPLE_SIZE = 20
 	
 def reccomendations(request):
 	#Benchmarking

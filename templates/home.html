@@ -181,7 +181,7 @@ $(document).ready(function() {
 		if(champions && region && tiers.length > 0) {
 			$('#numgames').fadeOut()
 			
-			var url = "/win_rate?" + param_url;
+			var url = "{% url 'loldreams:winrate' %}?" + param_url;
 			
 			$("#spinner_container1").show()
 			
@@ -276,7 +276,7 @@ $(document).ready(function() {
 		var champions = $("#champion_select").val();
 		var tiers = $(".tierselect:checked").map(function() { return this.name }).get();
 		
-		var url = "/reccomendations?" + $.param({
+		var url = "{% url 'loldreams:reccomendations' %}?" + $.param({
 			region : region,
 			id : champions,
 			tier : tiers
