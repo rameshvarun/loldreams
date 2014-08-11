@@ -1,11 +1,11 @@
 {% extends "main.html" %}
 {% block title%}LoL Dreams - Homepage{% endblock %}
 
-{% block content%} 
-	<style> 
-		.champion-image { max-width:50px; } 
-		.champion-title { padding-left:5px; } 
-		.champion_select { width: 100%; } 
+{% block content%}
+	<style>
+		.champion-image { max-width:50px; }
+		.champion-title { padding-left:5px; }
+		.champion_select { width: 100%; }
 		.region_select { width: 100%; }
 		.champion-result>tbody>tr>td { border-style:none; vertical-align:middle; font-weight:bold;}
 	</style>
@@ -25,7 +25,7 @@
 		<div class="col-md-8">
 			<select multiple class="champion_select" id="champion_select">
 				{% for champion in champions %}
-					<option value="{{ champion.riotid }}">{{ champion.full_name }}</option>
+					<option value="{{ champion.riotid }}">{{ champion.name }}</option>
 				{% endfor %}
 			</select>
 		</div>
@@ -36,7 +36,7 @@
 		</center>
 		</div>
 	</div>
-	
+
 	<center><div id='results_spinner_container'><br><div id='results_spinner'><br></div></div></center>
 
 	<div id="results" hidden=true>
@@ -44,17 +44,17 @@
 		<div class="row">
 			<div class="col-md-4 col-md-push-8">
 
-				
+
 				<center><button title="Find champions that complement your current team." id="evaluate_team" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Allies</button>
 				<div id='spinner_container'><br><br><div id='spinner'><br>This may take a minute.<br></div></div></center>
 				<div id="reccomendations_table"></div>
 
 				<br>
-								
+
 				<center><button title="Find champions that are strong against your current team." id="evaluate_bans" type="button" class="btn btn-success"><span class="glyphicon glyphicon-tasks"></span> Recommend Bans</button>
 				<div id='ban_spinner_container'><br><br><div id='ban_spinner'><br>This may take a minute.<br></div></div></center>
 				<div id="bans_table"></div>
-				
+
 			</div>
 			<div class="col-md-8 col-md-pull-4">
 				<div class="panel panel-default panel-info">
@@ -70,14 +70,14 @@
 						</table>
 					</div>
 				</div>
-				
+
 				<br>
 				{% if comments_enabled %} {% include "disqus.html" %} {% endif %}
 
 			</div>
 		</div>
 	</div>
-	
+
 	<div id="query_error" hidden=true class="row">
 		<div class="col-md-12">
 			<br>
@@ -85,7 +85,7 @@
 		</div>
 	</div>
 	<br>
-	
+
 	<p id='numgames' align="right"> Tracking {{ numgames }} games across NA, EUW, and EUNE.</p>
 
 <script>
@@ -93,8 +93,8 @@ CHAMPIONS = [
 	{% for champion in champions %}
 		{
 			"id" : "{{ champion.riotid }}",
-			"name" : "{{ champion.name }}",
-			"full_name" : "{{ champion.full_name }}"
+			"name" : "{{ champion.key }}",
+			"full_name" : "{{ champion.name }}"
 		},
 	{% endfor %}
 ]
@@ -114,96 +114,96 @@ function getChampionThumbnail(name) {
 
 function formatResult(champion) {
 	var data = null;
-	
+
 	for(var i = 0; i < CHAMPIONS.length; ++i) {
 		if(CHAMPIONS[i].id == champion.id) {
 			data = CHAMPIONS[i];
 		}
 	}
-	
+
 	var markup = "<table  class='champion-result'><tr>";
 	markup += "<td class='champion-image-container'><img class='champion-image' src='" + getChampionThumbnail(data.name) + "'/></td>";
 	markup += "<td class='champion-info'><div class='champion-title'>" + data.full_name + "</div></td>";
 	markup += "</tr></table>"
-	
+
 	return markup;
 }
 
 function formatSelection(champion) {
 	return champion.text;
 }
-	
+
 $(document).ready(function() {
 	$(document).tooltip();
-	
+
 	$("#region_select").select2({});
-	
+
 	$("#champion_select").select2({
 		//maximumSelectionSize: 5,
 		formatSelection: formatResult,
 		formatResult: formatResult
 	});
-	
+
 	//Check if there is a valid hashbang
 	if( window.location.hash.length > 2 ) {
 		//Restore region
 		var region = $.url().fparam('!region');
 		$("#region_select").select2("val", region);
-		
+
 		//Restore champions
 		var champions = $.url().fparam('id');
 		$("#champion_select").select2("val", champions);
-		
+
 		//Restore tier selection
 		var tiers = [].concat( $.url().fparam('tier') );
 		$("input[type='checkbox']").prop('checked', false);
 		$.each( tiers, function(i, tier) {
 			$("[name='" + tier + "']").prop('checked', true);
 		});
-		
+
 		//Re-perform query
 		setTimeout(function(){update_winrate()},100);
 	}
-	
+
 	function update_winrate() {
 		var champions = $("#champion_select").val();
 		var region = $("#region_select").val()
 		var tiers = $(".tierselect:checked").map(function() { return this.name }).get()
-		
+
 		var param_url = $.param({
 			region : region,
 			id : champions,
 			tier : tiers
 		}, true)
 		window.location.hash = '!' + param_url;
-		
+
 		if(champions && region && tiers.length > 0) {
 			$('#numgames').fadeOut()
-			
+
 			var url = "{% url 'loldreams:winrate' %}?" + param_url;
-			
+
 			$("#results_spinner_container").show()
-			
+
 			$.getJSON( url , function( data ) {
 				$("#results_spinner_container").hide();
 				if( data.winrate ) {
-					{% if comments_enabled %} 
+					{% if comments_enabled %}
 					DISQUS.reset({
 					  reload: true,
 					  config: function () {
 						var sorted = champions.sort();
 						var names = $.map(sorted, idToFullName );
-						
+
 						this.page.identifier = sorted.join(':');
 						this.page.url = window.location.href;
 						this.page.title = names.join(', ');
 					  }
 					});
 					{% endif %}
-					
+
 					$("#results").slideDown()
 					$("#query_error").slideUp()
-					
+
 					$('#result_winrate').html(Math.round( data.winrate * 100) + "%")
 					$('#result_samplesize').html(data.sample_size)
 				}
@@ -218,24 +218,24 @@ $(document).ready(function() {
 			$("#query_error").slideUp()
 			$('#numgames').fadeIn()
 		}
-		
+
 		$('#reccomendations_table').html("");
 		$('#bans_table').html("");
 		$('#evaluate_team').show()
 		$('#evaluate_bans').show()
 	}
-	
+
 	$("#champion_select").on("change", update_winrate );
 	$("#region_select").on("change", update_winrate );
 	$(".tierselect").change( update_winrate );
-	
+
 	//First get version numbers needed for obtaining champion thumbnails
 	var na_json = "http://ddragon.leagueoflegends.com/realms/na.json";
 	$.getJSON( na_json , function( data ) {
-		
+
 	});
 
-	
+
 	function reccomendations_table_html(reccomendations, type) {
 		if( reccomendations.length > 0 ) {
 			if(type == "allies")
@@ -243,58 +243,58 @@ $(document).ready(function() {
 			else
 				html = "<h3>Ban Reccomendations</h3>"
 			html += "<table class='tablesorter tablesorter-ice'>";
-			
+
 			if(type == "allies")
 				html += "<thead><tr><th>Champion</th><th title='The win rate if the given champion is added to your team.'>Win Rate</th><th>Sample Size</th></tr></thead>"
 			else
 				html += "<thead><tr><th>Champion</th><th title='The win rate where this champion is on the opposing team.'>Win Rate</th><th>Sample Size</th></tr></thead>"
-			
+
 			html += "<tbody>"
 			$.each(reccomendations, function(index, champion) {
 				html += "<tr>";
-				
+
 				html += "<td>" + formatResult(champion) + "</id>";
 				html += "<td>" + Math.round( champion.winrate * 100) + "%" + "</id>";
 				html += "<td>" + champion.sample_size + "</id>";
-				
+
 				html += "</tr>";
 			});
 			html += "</tbody>"
-			
+
 			html += "</table>";
-		
+
 			return html;
 		}
 		else {
 			return "<div class='alert alert-danger'>Could not get reccomendations.</div>";
 		}
 	}
-	
+
 	var results_spinner = new Spinner().spin( document.getElementById('results_spinner') );
 	$("#results_spinner_container").hide()
-	
+
 	var ban_spinner = new Spinner().spin( document.getElementById('ban_spinner') );
 	$("#ban_spinner_container").hide()
-	
+
 	var spinner = new Spinner().spin( document.getElementById('spinner') );
 	$("#spinner_container").hide()
-	
+
 	//Reccomendation search
 	$('#evaluate_team').click(function() {
 		$('#evaluate_team').hide()
-		
+
 		var region = $("#region_select").val();
 		var champions = $("#champion_select").val();
 		var tiers = $(".tierselect:checked").map(function() { return this.name }).get();
-		
+
 		var url = "{% url 'loldreams:reccomendations' %}?" + $.param({
 			region : region,
 			id : champions,
 			tier : tiers
 		}, true)
-		
+
 		$("#spinner_container").show()
-		
+
 		$.getJSON( url , function( data ) {
 			$("#spinner_container").hide()
 			if(data.error) {
@@ -308,23 +308,23 @@ $(document).ready(function() {
 			}
 		});
 	});
-	
+
 	//Ban reccomendations
 	$('#evaluate_bans').click(function() {
 		$('#evaluate_bans').hide();
-		
+
 		var region = $("#region_select").val();
 		var champions = $("#champion_select").val();
 		var tiers = $(".tierselect:checked").map(function() { return this.name }).get();
-		
+
 		var url = "{% url 'loldreams:banreccomendations' %}?" + $.param({
 			region : region,
 			id : champions,
 			tier : tiers
 		}, true)
-		
+
 		$("#ban_spinner_container").show()
-		
+
 		$.getJSON( url , function( data ) {
 			$("#ban_spinner_container").hide()
 			if(data.error) {
@@ -338,7 +338,7 @@ $(document).ready(function() {
 			}
 		});
 	});
-	
+
 });
 </script>
 
