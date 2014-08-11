@@ -63,7 +63,7 @@ TIER_CHOICES = (
 # Store game information
 class Game(models.Model):
 	riotid = models.IntegerField(primary_key=True) #Id assigned by Riot in the API
-	tier = models.IntegerField() #Store the tier level of the game
+	tier = models.IntegerField(db_index=True) #Store the tier level of the game
 
 	#Champions of team 1 - this is always the team of the player that we got the data for the game from
 	team1 = models.ManyToManyField(Champion, related_name='team1', blank=True, db_index=True)
@@ -71,8 +71,8 @@ class Game(models.Model):
 	#Champions of team 2
 	team2 = models.ManyToManyField(Champion, related_name='team2', blank=True, db_index=True)
 
-	result = models.BooleanField() #True if team 1 won, false if team 2 won
+	result = models.BooleanField(db_index=True) #True if team 1 won, false if team 2 won
 
 	date = models.DateTimeField('Date played') #The date the game was played
 
-	region = models.CharField(max_length=5, blank=True, choices=REGION_CHOICES) #The region in which the game was played
+	region = models.CharField(max_length=5, blank=True, choices=REGION_CHOICES, db_index=True) #The region in which the game was played
