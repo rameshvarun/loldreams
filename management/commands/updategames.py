@@ -5,7 +5,7 @@ from loldreams.models import *
 
 from HTMLParser import HTMLParser
 
-from loldreams.management.commands._ladder import GetSummonersInTier
+from loldreams.management.commands._ladder import GetChallengerTier
 
 import urllib2
 import urllib
@@ -19,7 +19,8 @@ API_BASE_URL = 'https://na.api.pvp.net/api/lol'
 def GetRecentGames(id, region):
 	time.sleep(1) #Rate limit API calls
 	try:
-		url = API_BASE_URL + '/' + region + '/v1.1/game/by-summoner/' + str(id) + '/recent?api_key=' + settings.RIOT_API_KEY
+		BASE_URL = 'https://' + region + '.api.pvp.net/api/lol'
+		url = BASE_URL + '/' + region + '/v1.3/game/by-summoner/' + str(id) + '/recent?api_key=' + settings.RIOT_API_KEY
 		return json.loads( urllib2.urlopen(url).read() )['games']
 	except:
 		print "Error getting games, returning empty list."
@@ -37,47 +38,38 @@ class Command(BaseCommand):
 
 		for region_code, region_name in REGION_CHOICES: #For each region specified in the models file
 			self.stdout.write(region_name)
-			for tier_code, tier_name in TIER_CHOICES: #For each tier
-				self.stdout.write("\t" + tier_name + " games.")
+			summoner_ids = GetChallengerTier(self.stdout, region_code)
 
-				summoner_ids = GetSummonersInTier(self.stdout, region_code, tier_code)
+			for id in summoner_ids:
+				for game in GetRecentGames(id, region_code):
+					play_date = datetime.datetime.fromtimestamp(game['createDate']/1000.0)
 
-				for id in summoner_ids:
-					for game in GetRecentGames(id, region_code):
-						play_date = datetime.datetime.fromtimestamp(game['createDate']/1000.0)
+					if game['subType'] == 'RANKED_SOLO_5x5' and not Game.objects.filter(riotid=game['gameId']).exists():
+						gameObj = Game( riotid=game['gameId'],
+							tier = CHALLENGER,
+							date = play_date,
+							region = region_code
+						)
 
-						if game['subType'] == 'RANKED_SOLO_5x5' and not Game.objects.filter(riotid=game['gameId']).exists():
-							gameObj = Game( riotid=game['gameId'],
-								tier = tier_code,
-								date = play_date,
-								region = region_code
-							)
+						#Find out if player's team won or not
+						gameObj.result = game['stats']['win']
 
-							#Find out if player's team won or not
-							for statistic in game['statistics']:
-								if statistic['name'] == "LOSE":
-									gameObj.result = False
-									break
-								if statistic['name'] == "WIN":
-									gameObj.result = True
-									break
+						#Save to database before figuring out teams
+						gameObj.save()
 
-							#Save to database before figuring out teams
-							gameObj.save()
+						#Add player to team1
+						gameObj.team1.add( GetChampionById(game['championId']) )
 
-							#Add player to team1
-							gameObj.team1.add( GetChampionById(game['championId']) )
+						#Add other players to teams
+						for player in game['fellowPlayers']:
+							champion = GetChampionById(player['championId'])
+							if player['teamId'] == game['teamId']:
+								gameObj.team1.add( champion )
+							else:
+								gameObj.team2.add( champion )
 
-							#Add other players to teams
-							for player in game['fellowPlayers']:
-								champion = GetChampionById(player['championId'])
-								if player['teamId'] == game['teamId']:
-									gameObj.team1.add( champion )
-								else:
-									gameObj.team2.add( champion )
-
-							#Persist final game to database
-							gameObj.save()
+						#Persist final game to database
+						gameObj.save()
 
 		self.stdout.write( str(len(Game.objects.all())) + " game entries stored in the database." ) #Take stock of how many games are stored in the database
 		print "Finished updating games in " + str(time.clock() - start) + " seconds."

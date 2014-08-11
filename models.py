@@ -25,7 +25,7 @@ def get_champion_json():
 class Champion(models.Model):
 	name = models.CharField(max_length=200) # The full actual name of the character (language dependant)
 	key = models.CharField(max_length=200) # Text identifier for the champion (language dependant)
-	riotid = models.IntegerField() #Id assigned by Riot in the API
+	riotid = models.IntegerField(primary_key=True) #Id assigned by Riot in the API
 
 	#Comma separated, lowercase list of the roles that the champion can play
 	#First role in list should be the primary role
@@ -62,14 +62,14 @@ TIER_CHOICES = (
 
 # Store game information
 class Game(models.Model):
-	riotid = models.IntegerField() #Id assigned by Riot in the API
+	riotid = models.IntegerField(primary_key=True) #Id assigned by Riot in the API
 	tier = models.IntegerField() #Store the tier level of the game
 
 	#Champions of team 1 - this is always the team of the player that we got the data for the game from
-	team1 = models.ManyToManyField(Champion, related_name='team1', blank=True)
+	team1 = models.ManyToManyField(Champion, related_name='team1', blank=True, db_index=True)
 
 	#Champions of team 2
-	team2 = models.ManyToManyField(Champion, related_name='team2', blank=True)
+	team2 = models.ManyToManyField(Champion, related_name='team2', blank=True, db_index=True)
 
 	result = models.BooleanField() #True if team 1 won, false if team 2 won
 

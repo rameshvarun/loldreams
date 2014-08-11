@@ -22,14 +22,14 @@
 				<option value="eune">Europe Nordic & East</option>
 			</select>
 		</div>
-		<div class="col-md-8">
+		<div class="col-md-10">
 			<select multiple class="champion_select" id="champion_select">
 				{% for champion in champions %}
 					<option value="{{ champion.riotid }}">{{ champion.name }}</option>
 				{% endfor %}
 			</select>
 		</div>
-		<div class="col-md-2">
+		<div hidden class="col-md-2">
 		<center>
 			<label title="Choose whether or not to sample games from Challenger league players." ><input class='tierselect' name='0' type="checkbox" checked='true'> Challenger</label><br>
 			<label title="Choose whether or not to sample games from Diamond league players."><input class='tierselect' name='1' type="checkbox" checked='true'> Diamond 1</label>
