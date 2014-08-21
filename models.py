@@ -62,7 +62,7 @@ TIER_CHOICES = (
 
 # Store game information
 class Game(models.Model):
-	riotid = models.IntegerField(primary_key=True) #Id assigned by Riot in the API
+	riotid = models.IntegerField(db_index=True) #Id assigned by Riot in the API
 	tier = models.IntegerField(db_index=True) #Store the tier level of the game
 
 	#Champions of team 1 - this is always the team of the player that we got the data for the game from

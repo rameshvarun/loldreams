@@ -18,12 +18,12 @@ API_BASE_URL = 'https://na.api.pvp.net/api/lol'
 
 def GetRecentGames(id, region):
 	time.sleep(1) #Rate limit API calls
-	try:
-		BASE_URL = 'https://' + region + '.api.pvp.net/api/lol'
-		url = BASE_URL + '/' + region + '/v1.3/game/by-summoner/' + str(id) + '/recent?api_key=' + settings.RIOT_API_KEY
+        BASE_URL = 'https://' + region + '.api.pvp.net/api/lol'
+        url = BASE_URL + '/' + region + '/v1.3/game/by-summoner/' + str(id) + '/recent?api_key=' + settings.RIOT_API_KEY
+        try:
 		return json.loads( urllib2.urlopen(url).read() )['games']
 	except:
-		print "Error getting games, returning empty list."
+		print "Error getting games at %s, returning empty list." % url
 		return []
 
 def GetChampionById(id):
@@ -39,10 +39,11 @@ class Command(BaseCommand):
 		for region_code, region_name in REGION_CHOICES: #For each region specified in the models file
 			self.stdout.write(region_name)
 			summoner_ids = GetChallengerTier(self.stdout, region_code)
+                        self.stdout.write("%d Summoners in Challenger Tier" % len(summoner_ids))
 
 			for id in summoner_ids:
 				for game in GetRecentGames(id, region_code):
-					play_date = datetime.datetime.fromtimestamp(game['createDate']/1000.0)
+					play_date = datetime.datetime.utcfromtimestamp(game['createDate']/1000.0)
 
 					if game['subType'] == 'RANKED_SOLO_5x5' and not Game.objects.filter(riotid=game['gameId']).exists():
 						gameObj = Game( riotid=game['gameId'],
