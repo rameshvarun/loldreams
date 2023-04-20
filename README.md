@@ -1,7 +1,7 @@
-#LoL Dreams
+# LoL Dreams
 ## Champion combination analysis
 
-![Imgur Thumbnail](http://i.imgur.com/3ibGMVU.png)
+![Screenshot](./screenshot.png)
 
 LoL Dreams is a Django app that scrapes games from a given set of leagues, storing them in a database. Later, users can enter in a combination of champions, and the app will calculate the win rate of all games where those champions appeared on the same team.
 
